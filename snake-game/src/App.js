@@ -11,16 +11,18 @@ const randomCoordinates = () => {
   return [x, y];
 };
 
+const initialState = {
+  food: randomCoordinates(),
+  direction: "RIGHT",
+  speed: 300,
+  snakeDots: [
+    [0, 0],
+    [2, 0]
+  ]
+};
+
 class App extends Component {
-  state = {
-    food: randomCoordinates(),
-    direction: "RIGHT",
-    speed: 300,
-    snakeDots: [
-      [0, 0],
-      [2, 0]
-    ]
-  };
+  state = initialState;
   onKeyDown = e => {
     e = e || window.event;
     switch (e.keyCode) {
@@ -44,6 +46,40 @@ class App extends Component {
     onkeydown = this.onKeyDown;
   }
 
+  componentDidUpdate() {
+    this.outOfBorder();
+    this.ifHeadTouchesBody();
+    this.ifSnakeAte()
+  }
+
+  ifSnakeAte() {
+    let head = this.state.snakeDots[this.state.snakeDots.length - 1];
+    let food = this.state.food;
+    if (head[0] == food[0] && head[1] == food[1]) {
+      this.setState({
+        food: randomCoordinates()
+      });
+      this.onSnakeAteFood();
+      this.increaseSpeed();
+    }
+  }
+
+  increaseSpeed() {
+    if (this.state.speed > 10) {
+      this.setState({
+        speed: this.state.speed - 10
+      });
+    }
+  }
+
+  onSnakeAteFood() {
+    let newSnake = [...this.state.snakeDots];
+    newSnake.unshift([]);
+    this.setState({
+      snakeDots: newSnake
+    });
+  }
+
   moveSnake = () => {
     let dots = [...this.state.snakeDots];
     let head = dots[dots.length - 1];
@@ -65,10 +101,32 @@ class App extends Component {
     dots.push(head);
     dots.shift();
     this.setState({
-      // snakeDots: dots
+      snakeDots: dots
     });
   };
 
+  outOfBorder() {
+    let head = this.state.snakeDots[this.state.snakeDots.length - 1];
+    if (head[0] >= 100 || head[1] >= 100 || head[0] < 0 || head[1] < 0) {
+      this.gameOver();
+      this.setState(initialState);
+    }
+  }
+
+  gameOver() {
+    alert(
+      `Game Over. The length of the snake is ${this.state.snakeDots.length}`
+    );
+  }
+  ifHeadTouchesBody() {
+    let snake = [...this.state.snakeDots];
+    let head = snake[snake.length - 1];
+    snake.pop();
+    snake.forEach(dot => {
+      if (head[0] == dot[0] && head[1] == dot[1]) {
+      }
+    });
+  }
   render() {
     return (
       <div className="gameArea">
